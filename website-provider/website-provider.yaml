@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-provider
+  labels:
+    app: website-provider
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: website-provider
+  template:
+    metadata:
+      labels:
+        app: website-provider
+    spec:
+      containers:
+      - name: website-provider
+        image: website-provider
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4000
+          
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: website-provider
+spec:
+  type: NodePort
+  ports:
+    - nodePort: 30003
+      port: 4000
+      protocol: TCP
+      targetPort: 4000
+  selector:
+    app: website-provider
