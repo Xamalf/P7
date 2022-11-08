@@ -20,6 +20,7 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 3000
+      dnsPolicy: ClusterFirst
           
 ---
 

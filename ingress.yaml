@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+spec:
+  rules:
+  - host: revuppaal.dk
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: auth
+            port:
+              number: 3000
+      - path: /website-provider
+        pathType: Prefix
+        backend:
+          service:
+            name: website-provider
+            port:
+              number: 4000
+      - path: /exercise-provider
+        pathType: Prefix
+        backend:
+          service:
+            name: exercise-provider
+            port:
+              number: 2000
+      - path: /exercise-verifier
+        pathType: Prefix
+        backend:
+          service:
+            name: exercise-verifier
+            port:
+              number: 10000
+

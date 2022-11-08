@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import uvicorn
 
-app = FastAPI()
+app = FastAPI(root_path="/website-provider")
 
 @app.get("/website-provider")
 async def root():
