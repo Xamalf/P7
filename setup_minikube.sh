@@ -1,5 +1,6 @@
 #!/bin/bash
 eval $(minikube -p minikube docker-env)
+minikube addons enable ingress
 
 docker build -t auth ./auth/.
 docker build -t exercise-provider ./exercise-provider/.

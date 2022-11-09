@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Base image
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8-alpine3.10
+FROM python:3.8-alpine
 
 RUN mkdir -p /home/appuser/app
 

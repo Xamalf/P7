@@ -28,10 +28,9 @@ kind: Service
 metadata:
   name: website-provider
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
-    - nodePort: 30003
-      port: 4000
+    - port: 4000
       protocol: TCP
       targetPort: 4000
   selector:

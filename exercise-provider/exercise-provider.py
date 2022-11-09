@@ -7,7 +7,7 @@ app = FastAPI(root_path="/exercise-provider")
 @app.post("/exercise-provider")
 async def root():
     try:
-        auth_response = requests.post("http://auth:3000/auth") # Calling auth
+        auth_response = requests.post("http://auth.default:3000/auth") # Calling auth
         # exercise_response = await data_base # Calling exercise database
         if auth_response.status_code != 200:
             raise HTTPException(

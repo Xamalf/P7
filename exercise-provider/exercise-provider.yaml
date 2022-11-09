@@ -28,10 +28,9 @@ kind: Service
 metadata:
   name: exercise-provider
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
-    - nodePort: 30001
-      port: 2000
+    - port: 2000
       protocol: TCP
       targetPort: 2000
   selector:
