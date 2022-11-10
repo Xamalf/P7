@@ -7,7 +7,7 @@ app = FastAPI(root_path="/exercise-verifier")
 @app.post("/exercise-verifier")
 async def root():
     try:
-        auth_response = requests.post("http://auth.default:3000/auth") # Calling auth
+        auth_response = requests.post("http://auth.default:3000/auth", {"name": "tester"}) # Calling auth
         exercise_provider_response = requests.post("http://exercise-provider.default:2000/exercise-provider") # Calling exercise provider
         # user_dataresponse = await data_base # Calling user database
         if auth_response.status_code != 200 or exercise_provider_response.status_code != 200:
@@ -20,12 +20,12 @@ async def root():
             status_code=404,
             detail="Auth or exercise_provider failed"
         )
-    return {"message": "Hello from exercise verifier!"}
+    return {"message": f"Hello  {auth_response.name} from exercise verifier!"}
 
 @app.get("/exercise-verifier")
 async def root():
     try:
-        auth_response = requests.post("http://auth.default:3000/auth") # Calling auth
+        auth_response = requests.post("http://auth.default:3000/auth", {"name": "tester"}) # Calling auth
         exercise_provider_response = requests.post("http://exercise-provider.default:2000/exercise-provider") # Calling exercise provider
         # user_dataresponse = await data_base # Calling user database
         if auth_response.status_code != 200 or exercise_provider_response.status_code != 200:
