@@ -5,9 +5,9 @@ import uvicorn
 class User_info(BaseModel):
     name: str
     
-app = FastAPI(root_path="/")
+app = FastAPI(root_path="/auth")
 
-@app.get("/")
+@app.get("/auth")
 async def root():
     return {"message": "Hello from auth!"}
 
