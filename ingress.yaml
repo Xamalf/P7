@@ -28,6 +28,13 @@ spec:
             name: exercise-provider
             port:
               number: 2000
+      - path: /data-access
+        pathType: Prefix
+        backend:
+          service:
+            name: data-access
+            port:
+              number: 5000
       - path: /exercise-verifier
         pathType: Prefix
         backend:
