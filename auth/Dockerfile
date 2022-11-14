@@ -16,4 +16,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD python auth.py
+CMD python auth.py > logs

@@ -16,4 +16,4 @@ COPY . .
 
 EXPOSE 2000
 
-CMD python exercise-provider.py
+CMD python exercise-provider.py > logs

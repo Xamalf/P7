@@ -16,4 +16,4 @@ COPY . .
 
 EXPOSE 4000
 
-CMD python website-provider.py
+CMD python website-provider.py > logs

@@ -16,4 +16,4 @@ COPY . .
 
 EXPOSE 10000
 
-CMD python exercise-verifier.py
+CMD python exercise-verifier.py > logs
