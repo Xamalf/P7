@@ -1,13 +1,18 @@
 from fastapi import FastAPI, HTTPException
 import requests
 import uvicorn
+from pydantic import BaseModel
 
 app = FastAPI(root_path="/exercise-verifier")
 
+class Xml_wrapper(BaseModel):
+    xml: str 
+
+
 @app.post("/exercise-verifier")
-async def root():
+async def root(xml_in_json: Xml_wrapper):
     try:
-        auth_response = requests.post("http://auth.default:3000/auth", {"name": "tester"}) # Calling auth
+        auth_response = requests.post("http://auth.default:3000/auth", json={"name": "tester"}) # Calling auth
         exercise_provider_response = requests.post("http://exercise-provider.default:2000/exercise-provider") # Calling exercise provider
         # user_dataresponse = await data_base # Calling user database
         if auth_response.status_code != 200 or exercise_provider_response.status_code != 200:
@@ -20,12 +25,19 @@ async def root():
             status_code=404,
             detail="Auth or exercise_provider failed"
         )
-    return {"message": f"Hello  {auth_response.name} from exercise verifier!"}
+        
+    xml = xml_in_json.xml
+    with open('exercise.xml', 'w') as f:
+        f.write(xml)
+
+    
+
+    return {"message": f"Hello {auth_response.json()['name']} from exercise verifier!"}
 
 @app.get("/exercise-verifier")
 async def root():
     try:
-        auth_response = requests.post("http://auth.default:3000/auth", {"name": "tester"}) # Calling auth
+        auth_response = requests.post("http://auth.default:3000/auth", json={"name": "tester"}) # Calling auth
         exercise_provider_response = requests.post("http://exercise-provider.default:2000/exercise-provider") # Calling exercise provider
         # user_dataresponse = await data_base # Calling user database
         if auth_response.status_code != 200 or exercise_provider_response.status_code != 200:
