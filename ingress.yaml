@@ -4,7 +4,7 @@ metadata:
   name: my-ingress
 spec:
   rules:
-  - host: revuppaal.dk
+  - host: revuppaal.test
     http:
       paths:
       - path: /

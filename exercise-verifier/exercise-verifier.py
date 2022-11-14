@@ -6,6 +6,7 @@ from pydantic import BaseModel
 app = FastAPI(root_path="/exercise-verifier")
 
 class Xml_wrapper(BaseModel):
+    id: int
     xml: str 
 
 
@@ -13,7 +14,8 @@ class Xml_wrapper(BaseModel):
 async def root(xml_in_json: Xml_wrapper):
     try:
         auth_response = requests.post("http://auth.default:3000/auth", json={"name": "tester"}) # Calling auth
-        exercise_provider_response = requests.post("http://exercise-provider.default:2000/exercise-provider") # Calling exercise provider
+        exercise_provider_response = requests.post("http://exercise-provider.default:2000/exercise-provider", 
+            json={"id":xml_in_json.id}) # Calling exercise provider
         # user_dataresponse = await data_base # Calling user database
         if auth_response.status_code != 200 or exercise_provider_response.status_code != 200:
             raise HTTPException(
