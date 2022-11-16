@@ -18,7 +18,7 @@ spec:
       - name: user-db
         image: postgres
         ports:
-        - containerPort: 20000
+        - containerPort: 5432
         env:
         - name: POSTGRES_DB
           value: user_data_db
@@ -26,6 +26,13 @@ spec:
           value: user
         - name: POSTGRES_PASSWORD
           value: passw0rd124
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: user-db-pvc
+      volumes:
+      - name: user-db-pvc
+        persistentVolumeClaim:
+          claimName: user-db-pvc
           
 ---
 
