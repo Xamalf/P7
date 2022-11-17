@@ -19,6 +19,10 @@ spec:
         image: postgres
         ports:
         - containerPort: 5432
+        lifecycle:
+          postStart: 
+            exec:
+              command: ["/bin/sh", "-c", "sleep 20 && PGPASSWORD=passw0rd124 psql -w -d user_data_db -U user -c 'CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, about TEXT); CREATE TABLE IF NOT EXISTS exercises (id SERIAL PRIMARY KEY, name TEXT, description TEXT); CREATE TABLE IF NOT EXISTS completed_exercises (ex_id SERIAL REFERENCES exercises, user_id SERIAL REFERENCES users, xp INT);'"]
         env:
         - name: POSTGRES_DB
           value: user_data_db

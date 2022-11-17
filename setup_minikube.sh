@@ -25,5 +25,7 @@ kubectl apply -f ./data-access/data-access.yaml
 kubectl delete -f ./databases/user_db.yaml
 kubectl apply -f ./databases/user_db.yaml
 
+kubectl apply -f ./databases/volumeandclaim.yaml
+
 kubectl delete -f ./ingress.yaml
 kubectl apply -f ./ingress.yaml

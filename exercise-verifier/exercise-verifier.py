@@ -32,8 +32,6 @@ async def root(xml_in_json: Xml_wrapper):
     with open('exercise.xml', 'w') as f:
         f.write(xml)
 
-    
-
     return {"message": f"Hello {auth_response.json()['name']} from exercise verifier!"}
 
 @app.get("/exercise-verifier")
