@@ -22,7 +22,7 @@ spec:
         lifecycle:
           postStart: 
             exec:
-              command: ["/bin/sh", "-c", "sleep 20 && PGPASSWORD=passw0rd124 psql -w -d user_data_db -U user -c 'CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, about TEXT); CREATE TABLE IF NOT EXISTS exercises (id SERIAL PRIMARY KEY, name TEXT, description TEXT); CREATE TABLE IF NOT EXISTS completed_exercises (ex_id SERIAL REFERENCES exercises, user_id SERIAL REFERENCES users, xp INT);'"]
+              command: ["/bin/sh", "-c", "sleep 20 && PGPASSWORD=passw0rd124 psql -w -d user_data_db -U user -c 'CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, about TEXT); CREATE TABLE IF NOT EXISTS exercises (id SERIAL PRIMARY KEY, name TEXT, xp INT, description TEXT); CREATE TABLE IF NOT EXISTS completed_exercises (ex_id SERIAL REFERENCES exercises, user_id SERIAL REFERENCES users);'"]
         env:
         - name: POSTGRES_DB
           value: user_data_db
@@ -47,8 +47,8 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 20000
+    - port: 5432
       protocol: TCP
-      targetPort: 20000
+      targetPort: 5432
   selector:
     app: user-db
