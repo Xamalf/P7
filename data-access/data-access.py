@@ -21,6 +21,10 @@ class CompletedExercise(BaseModel):
 class UserName(BaseModel):
     name: str
 
+class ExerciseDescription(BaseModel):
+    name: str
+
+
 db_connection = psycopg2.connect(
             database="user_data_db",
             user="user",
@@ -98,10 +102,29 @@ async def root(user: UserName):
     
 # -- #
 
-@app.post("/data-access/get-exercise-info")
-async def root():
-    
-    return {"message": f"Here is the exercise info"}
+@app.post("/data-access/get-exercise-description")
+async def root(exercise: ExerciseDescription):
+    print("get-exercise-description entered")
+    db_connection.autocommit = True
+
+    try:
+        db_cursor.execute('''SELECT description FROM exercises WHERE name = %s''', [exercise.name])
+    except Exception as e:
+        print("Getting exercise description from exercises failed")
+        return {"message": f'{str(e)}'}
+
+    try:
+        exercise_description = db_cursor.fetchone()[0]
+    except Exception as e:
+        return {"message": f'{str(e)}'}
+
+    print("get-exercise-description exited")
+    return {"description": exercise_description}
+
+
+
+
+
 
 @app.post("/data-access/complete-exercise")
 async def root():
