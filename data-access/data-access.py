@@ -2,12 +2,13 @@ from fastapi import FastAPI, HTTPException
 import uvicorn
 import psycopg2
 from pydantic import BaseModel
+from datetime import datetime as dt
 
 app = FastAPI()
 
 class User(BaseModel):
     name: str
-    about: str 
+    about: str
 
 class Exercise(BaseModel):
     name: str
@@ -41,7 +42,7 @@ async def root(user: User):
 
     db_connection.autocommit = True
     try:
-        db_cursor.execute('''INSERT INTO users(name, about) VALUES (%s, %s);''', [user.name, user.about])
+        db_cursor.execute('''INSERT INTO users(name, about, title, createdAt) VALUES (%s, %s, %s, %s);''', [user.name, user.about, "Revuppaal User", dt.now().strftime('%d %B %Y')])
     except Exception as e:
         print("Creating user in users failed")
         return {"message": f'{str(e)}'}
@@ -63,7 +64,7 @@ async def root(user: UserName):
     
     try:
         user_info = db_cursor.fetchone()
-        user_info_as_json = {"name": user_info[1], "about": user_info[2]}
+        user_info_as_json = {"name": user_info[1], "title": user_info[2], "createdAt": user_info[3], "about": user_info[4]}
     except Exception as e:
         print("fetctone() failed")
         return {"message": f'{str(e)}', "user_info": user_info}
