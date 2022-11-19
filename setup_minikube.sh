@@ -18,7 +18,7 @@ docker build -t website-provider ./website-provider/.
 kubectl delete -f ./website-provider/website-provider.yaml
 kubectl apply -f ./website-provider/website-provider.yaml
 
-docker build -t data-access ./data-access/.
+docker build -t data-access ./data-access/. --no-cache
 kubectl delete -f ./data-access/data-access.yaml
 kubectl apply -f ./data-access/data-access.yaml
 
