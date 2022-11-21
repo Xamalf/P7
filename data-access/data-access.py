@@ -22,9 +22,12 @@ class CompletedExercise(BaseModel):
 class UserName(BaseModel):
     name: str
 
-class ExerciseDescription(BaseModel):
+class ExerciseName(BaseModel):
     name: str
 
+class ExerciseAndUserName(BaseModel):
+    user_name: str
+    exercise_name: str
 
 db_connection = psycopg2.connect(
             database="user_data_db",
@@ -104,7 +107,7 @@ async def root(user: UserName):
 # -- #
 
 @app.post("/data-access/get-exercise-description")
-async def root(exercise: ExerciseDescription):
+async def root(exercise: ExerciseName):
     print("get-exercise-description entered")
     db_connection.autocommit = True
 
@@ -123,13 +126,34 @@ async def root(exercise: ExerciseDescription):
     return {"description": exercise_description}
 
 
+@app.post("/data-access/insert-completed-exercise")
+async def root(exerciseAndUserName: ExerciseAndUserName):
+    print("insert-complete-exercise entered")
+    db_connection.autocommit = True
 
-
-
-
-@app.post("/data-access/complete-exercise")
-async def root():
+    try:
+        db_cursor.execute('''SELECT id FROM users WHERE name = %s''', [exerciseAndUserName.user_name])
+    except Exception as e:
+        print("Getting user from users failed")
+        return {"message": f'{str(e)}'}
     
+    user_id = db_cursor.fetchone()[0]
+    
+    try:
+        db_cursor.execute('''SELECT id FROM exercises WHERE name = %s''', [exerciseAndUserName.exercise_name])
+    except Exception as e:
+        print("Getting exercise from exercises failed")
+        return {"message": f'{str(e)}'}
+
+    ex_id = db_cursor.fetchone()[0]
+
+    try:
+        db_cursor.execute('''INSERT INTO completed_exercises(ex_id, user_id) VALUES (%s, %s);''', [ex_id, user_id])
+    except Exception as e:
+        print("Creating user in users failed")
+        return {"message": f'{str(e)}'}
+    
+    print("insert-complete-exercise exited")
     return {"message": f"User has completed exercise"}
 
 
