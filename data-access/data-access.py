@@ -22,8 +22,8 @@ class CompletedExercise(BaseModel):
 class UserName(BaseModel):
     name: str
 
-class ExerciseName(BaseModel):
-    name: str
+class ExerciseDescription(BaseModel):
+    ex_id: int
 
 class ExerciseAndUserName(BaseModel):
     user_name: str
@@ -107,23 +107,23 @@ async def root(user: UserName):
 # -- #
 
 @app.post("/data-access/get-exercise-description")
-async def root(exercise: ExerciseName):
+async def root(exercise: ExerciseDescription):
     print("get-exercise-description entered")
     db_connection.autocommit = True
 
     try:
-        db_cursor.execute('''SELECT description FROM exercises WHERE name = %s''', [exercise.name])
+        db_cursor.execute('''SELECT * FROM exercises WHERE id = %s''', [exercise.ex_id])
     except Exception as e:
         print("Getting exercise description from exercises failed")
         return {"message": f'{str(e)}'}
 
     try:
-        exercise_description = db_cursor.fetchone()[0]
+        exercise_description = db_cursor.fetchone()
     except Exception as e:
         return {"message": f'{str(e)}'}
 
     print("get-exercise-description exited")
-    return {"description": exercise_description}
+    return {"description": exercise_description[3], "name": exercise_description[1]}
 
 
 @app.post("/data-access/insert-completed-exercise")
@@ -155,6 +155,32 @@ async def root(exerciseAndUserName: ExerciseAndUserName):
     
     print("insert-complete-exercise exited")
     return {"message": f"User has completed exercise"}
+
+@app.post("/data-access/get-leaderboards")
+async def root():
+    print("get-leaderboards entered")
+    db_connection.autocommit = True
+
+    try:
+        db_cursor.execute('''SELECT name, id FROM users''')
+    except Exception as e:
+        print("Getting leaderboards failed")
+        return {"message": f'{str(e)}'}
+
+    try:
+        exercise_info = db_cursor.fetchall()
+    except Exception as e:
+        return {"message": f'{str(e)}'}
+
+    print("get-leaderboards exited")
+
+    jsonObject = {}
+    for x in exercise_info:
+        jsonObject.update({f'{x[1]}' : f'{x[0]}'})
+
+
+    
+    return jsonObject
 
 
 uvicorn.run(app, host="0.0.0.0", port=5000)
