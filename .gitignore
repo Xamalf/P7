@@ -25,3 +25,6 @@ hs_err_pid*
 __pycache__
 
 /website-provider/dist
+
+.DS_Store
+*.sh
