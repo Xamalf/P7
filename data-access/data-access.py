@@ -29,6 +29,7 @@ class ExerciseAndUserName(BaseModel):
     user_name: str
     exercise_name: str
 
+
 db_connection = psycopg2.connect(
             database="user_data_db",
             user="user",
@@ -156,30 +157,29 @@ async def root(exerciseAndUserName: ExerciseAndUserName):
     print("insert-complete-exercise exited")
     return {"message": f"User has completed exercise"}
 
-@app.post("/data-access/get-leaderboards")
+
+@app.post("/data-access/get-user-scores")
 async def root():
-    print("get-leaderboards entered")
+    print("get-user-scores entered")
     db_connection.autocommit = True
-
+    
     try:
-        db_cursor.execute('''SELECT name, id FROM users''')
+        db_cursor.execute('''SELECT u.name, SUM(e.xp) FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e ON ex_id = e.id GROUP BY u.name ORDER BY SUM DESC;''')
     except Exception as e:
-        print("Getting leaderboards failed")
+        print("Query failed")
         return {"message": f'{str(e)}'}
-
+    
     try:
-        exercise_info = db_cursor.fetchall()
+        leaderboard_info = db_cursor.fetchall()
     except Exception as e:
+        print("fetchall() failed")
         return {"message": f'{str(e)}'}
-
-    print("get-leaderboards exited")
 
     jsonObject = {}
-    for x in exercise_info:
-        jsonObject.update({f'{x[1]}' : f'{x[0]}'})
-
-
+    for x in leaderboard_info:
+        jsonObject.update({f'{x[0]}' : f'{x[1]}'})
     
+    print("get-user-scores exited")
     return jsonObject
 
 
