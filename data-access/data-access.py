@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Cookie, FastAPI, HTTPException
 import uvicorn
 import psycopg2
 from pydantic import BaseModel
@@ -9,6 +9,7 @@ app = FastAPI()
 class User(BaseModel):
     name: str
     about: str
+    email: str
 
 class Exercise(BaseModel):
     name: str
@@ -46,7 +47,7 @@ async def root(user: User):
 
     db_connection.autocommit = True
     try:
-        db_cursor.execute('''INSERT INTO users(name, about, title, createdAt) VALUES (%s, %s, %s, %s);''', [user.name, user.about, "Revuppaal User", dt.now().strftime('%d %B %Y')])
+        db_cursor.execute('''INSERT INTO users(name, about, title, createdAt, email) VALUES (%s, %s, %s, %s, %s);''', [user.name, user.about, "Revuppaal User", dt.now().strftime('%d %B %Y'), user.email])
     except Exception as e:
         print("Creating user in users failed")
         return {"message": f'{str(e)}'}
@@ -161,10 +162,9 @@ async def root(exerciseAndUserName: ExerciseAndUserName):
 @app.post("/data-access/get-user-scores")
 async def root():
     print("get-user-scores entered")
-    db_connection.autocommit = True
     
     try:
-        db_cursor.execute('''SELECT u.name, SUM(e.xp) FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e ON ex_id = e.id GROUP BY u.name ORDER BY SUM DESC;''')
+        db_cursor.execute('''SELECT row_number() OVER(ORDER BY SUM(e.xp) DESC) rank, u.name, SUM(e.xp), COUNT(u.name) completed FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e ON ex_id = e.id GROUP BY u.name ORDER BY SUM DESC;''')
     except Exception as e:
         print("Query failed")
         return {"message": f'{str(e)}'}
@@ -177,10 +177,14 @@ async def root():
 
     jsonObject = {}
     for x in leaderboard_info:
-        jsonObject.update({f'{x[0]}' : f'{x[1]}'})
+        jsonObject.update({f'{x[0]}' : [f'{x[1]}', f'{x[2]}', f'{x[3]}']})
     
     print("get-user-scores exited")
     return jsonObject
 
+
+@app.get("/data-access/show-cookie")
+def root(Cookie: str = Cookie(None)):
+    print(Cookie)
 
 uvicorn.run(app, host="0.0.0.0", port=5000)

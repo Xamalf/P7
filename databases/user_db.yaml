@@ -22,7 +22,7 @@ spec:
         lifecycle:
           postStart: 
             exec:
-              command: ["/bin/sh", "-c", "sleep 20 && PGPASSWORD=passw0rd124 psql -w -d user_data_db -U user -c 'CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, title TEXT, createdAt TEXT, about TEXT); CREATE TABLE IF NOT EXISTS exercises (id SERIAL PRIMARY KEY, name TEXT, xp INT, description TEXT); CREATE TABLE IF NOT EXISTS completed_exercises (ex_id SERIAL REFERENCES exercises, user_id SERIAL REFERENCES users);'"]
+              command: ["/bin/sh", "-c", "sleep 20 && PGPASSWORD=passw0rd124 psql -w -d user_data_db -U user -c 'CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, title TEXT, createdAt TEXT, about TEXT, email TEXT); CREATE TABLE IF NOT EXISTS exercises (id SERIAL PRIMARY KEY, name TEXT, xp INT, description TEXT); CREATE TABLE IF NOT EXISTS completed_exercises (ex_id SERIAL REFERENCES exercises, user_id SERIAL REFERENCES users);'"]
         env:
         - name: POSTGRES_DB
           value: user_data_db
