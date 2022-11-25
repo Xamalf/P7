@@ -39,13 +39,14 @@ db_connection = psycopg2.connect(
             port=5432,
         )
 
+db_connection.autocommit = True
 db_cursor = db_connection.cursor()
+
  
 @app.post("/data-access/create-user")
 async def root(user: User):
     print("create-user entered")
 
-    db_connection.autocommit = True
     try:
         db_cursor.execute('''INSERT INTO users(name, about, title, createdAt, email) VALUES (%s, %s, %s, %s, %s);''', [user.name, user.about, "Revuppaal User", dt.now().strftime('%d %B %Y'), user.email])
     except Exception as e:
@@ -59,7 +60,6 @@ async def root(user: User):
 @app.post("/data-access/get-user-info")
 async def root(user: UserName):
     print("get-user-info entered")
-    db_connection.autocommit = True
 
     try:
         db_cursor.execute('''SELECT * FROM users WHERE name = %s''', [user.name])
@@ -81,7 +81,6 @@ async def root(user: UserName):
 @app.post("/data-access/delete-user")
 async def root(user: UserName):
     print("delete-user entered")
-    db_connection.autocommit = True
 
     try:
         db_cursor.execute('''SELECT id FROM users WHERE name = %s''', [user.name])
@@ -111,7 +110,6 @@ async def root(user: UserName):
 @app.post("/data-access/get-exercise-description")
 async def root(exercise: ExerciseDescription):
     print("get-exercise-description entered")
-    db_connection.autocommit = True
 
     try:
         db_cursor.execute('''SELECT * FROM exercises WHERE id = %s''', [exercise.ex_id])
@@ -131,7 +129,6 @@ async def root(exercise: ExerciseDescription):
 @app.post("/data-access/insert-completed-exercise")
 async def root(exerciseAndUserName: ExerciseAndUserName):
     print("insert-complete-exercise entered")
-    db_connection.autocommit = True
 
     try:
         db_cursor.execute('''SELECT id FROM users WHERE name = %s''', [exerciseAndUserName.user_name])
@@ -181,10 +178,5 @@ async def root():
     
     print("get-user-scores exited")
     return jsonObject
-
-
-@app.get("/data-access/show-cookie")
-def root(Cookie: str = Cookie(None)):
-    print(Cookie)
 
 uvicorn.run(app, host="0.0.0.0", port=5000)
