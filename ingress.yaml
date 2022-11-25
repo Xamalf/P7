@@ -42,4 +42,12 @@ spec:
             name: exercise-verifier
             port:
               number: 10000
+      - path: /google-verifier
+        pathType: Prefix
+        backend:
+          service:
+            name: google-verifier
+            port:
+              number: 6000
+
 
