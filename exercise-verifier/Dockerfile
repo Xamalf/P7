@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 # Base image
-FROM python:3.8-alpine
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y python3-pip
 
 RUN mkdir -p /home/appuser/app
 
@@ -16,4 +18,4 @@ COPY . .
 
 EXPOSE 10000
 
-CMD python exercise-verifier.py > logs
+CMD python3 exercise-verifier.py > logs

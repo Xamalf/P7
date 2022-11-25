@@ -2,6 +2,10 @@ from fastapi import FastAPI, HTTPException
 import requests
 import uvicorn
 from pydantic import BaseModel
+import subprocess
+from uuid import uuid4
+from os import remove
+
 
 app = FastAPI(root_path="/exercise-verifier")
 
@@ -27,12 +31,31 @@ async def root(xml_in_json: Xml_wrapper):
             status_code=404,
             detail="Auth or exercise_provider failed"
         )
-        
-    xml = xml_in_json.xml
-    with open('exercise.xml', 'w') as f:
-        f.write(xml)
 
-    return {"message": f"Hello {auth_response.json()['name']} from exercise verifier!"}
+    file_name = "./exercises/" + str(uuid4()) + ".xml"
+
+    text = exercise_provider_response.content
+
+    print(text)
+
+    with open(file_name, "wb") as f:
+        f.write(text)
+
+    print("after write")
+
+    output = subprocess.check_output(["./verifyer/verifyta", file_name])
+
+    print("after call")
+
+    remove(file_name)
+
+    if b'Formula is NOT satisfied' in output:
+        return {"message": f"Hello {auth_response.json()['name']} from exercise verifier! \n "
+                           f"One or more queries NOT satisfied \n OUTPUT: \n {output}"}
+    else:
+        return {"message": f"Hello {auth_response.json()['name']} from exercise verifier! \n "
+                           f"All queries satisfied \n OUTPUT: \n {output}"}
+
 
 @app.get("/exercise-verifier")
 async def root():

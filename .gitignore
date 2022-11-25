@@ -25,6 +25,7 @@ hs_err_pid*
 __pycache__
 
 /website-provider/dist
-
+/exercise-verifier/verifyer/*
+/exercise-provider/exercises/*
 .DS_Store
 *.sh
