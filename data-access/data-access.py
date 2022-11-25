@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Cookie, FastAPI, HTTPException
 import uvicorn
 import psycopg2
 from pydantic import BaseModel
@@ -9,6 +9,7 @@ app = FastAPI()
 class User(BaseModel):
     name: str
     about: str
+    email: str
 
 class Exercise(BaseModel):
     name: str
@@ -29,6 +30,7 @@ class ExerciseAndUserName(BaseModel):
     user_name: str
     exercise_name: str
 
+
 db_connection = psycopg2.connect(
             database="user_data_db",
             user="user",
@@ -45,7 +47,7 @@ async def root(user: User):
 
     db_connection.autocommit = True
     try:
-        db_cursor.execute('''INSERT INTO users(name, about, title, createdAt) VALUES (%s, %s, %s, %s);''', [user.name, user.about, "Revuppaal User", dt.now().strftime('%d %B %Y')])
+        db_cursor.execute('''INSERT INTO users(name, about, title, createdAt, email) VALUES (%s, %s, %s, %s, %s);''', [user.name, user.about, "Revuppaal User", dt.now().strftime('%d %B %Y'), user.email])
     except Exception as e:
         print("Creating user in users failed")
         return {"message": f'{str(e)}'}
@@ -156,31 +158,33 @@ async def root(exerciseAndUserName: ExerciseAndUserName):
     print("insert-complete-exercise exited")
     return {"message": f"User has completed exercise"}
 
-@app.post("/data-access/get-leaderboards")
+
+@app.post("/data-access/get-user-scores")
 async def root():
-    print("get-leaderboards entered")
-    db_connection.autocommit = True
-
+    print("get-user-scores entered")
+    
     try:
-        db_cursor.execute('''SELECT name, id FROM users''')
+        db_cursor.execute('''SELECT row_number() OVER(ORDER BY SUM(e.xp) DESC) rank, u.name, SUM(e.xp), COUNT(u.name) completed FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e ON ex_id = e.id GROUP BY u.name ORDER BY SUM DESC;''')
     except Exception as e:
-        print("Getting leaderboards failed")
+        print("Query failed")
         return {"message": f'{str(e)}'}
-
+    
     try:
-        exercise_info = db_cursor.fetchall()
+        leaderboard_info = db_cursor.fetchall()
     except Exception as e:
+        print("fetchall() failed")
         return {"message": f'{str(e)}'}
-
-    print("get-leaderboards exited")
 
     jsonObject = {}
-    for x in exercise_info:
-        jsonObject.update({f'{x[1]}' : f'{x[0]}'})
-
-
+    for x in leaderboard_info:
+        jsonObject.update({f'{x[0]}' : [f'{x[1]}', f'{x[2]}', f'{x[3]}']})
     
+    print("get-user-scores exited")
     return jsonObject
 
+
+@app.get("/data-access/show-cookie")
+def root(Cookie: str = Cookie(None)):
+    print(Cookie)
 
 uvicorn.run(app, host="0.0.0.0", port=5000)
