@@ -10,7 +10,7 @@ const client = new OAuth2Client(
   }
 )
 
-app.post('/', (req, res) => {
+app.post('/google-verifier', (req, res) => {
   
   verifyCode(req.body.code).then((userInfo) => {
     res.send(userInfo)

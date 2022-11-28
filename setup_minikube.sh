@@ -27,5 +27,8 @@ kubectl apply -f ./databases/user_db.yaml
 
 kubectl apply -f ./databases/volumeandclaim.yaml
 
+kubectl apply -f ./secrets/db_secret.yaml
+kubectl apply -f ./secrets/google_secret.yaml
+
 kubectl delete -f ./ingress.yaml
 kubectl apply -f ./ingress.yaml

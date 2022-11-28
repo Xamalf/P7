@@ -24,12 +24,12 @@ spec:
         - name: CLIENT-ID
           valueFrom: 
             secretKeyRef:
-              name: googleSecret
+              name: googlesecret
               key: client_id
         - name: CLIENT-SECRET
           valueFrom: 
             secretKeyRef:
-              name: googleSecret
+              name: googlesecret
               key: client_secret
           
 ---
