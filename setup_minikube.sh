@@ -10,6 +10,10 @@ docker build -t exercise-provider ./exercise-provider/.
 kubectl delete -f ./exercise-provider/exercise-provider.yaml
 kubectl apply -f ./exercise-provider/exercise-provider.yaml
 
+docker build -t google-verifier ./google-verifier/.
+kubectl delete -f ./google-verifier/google-verifier.yaml
+kubectl apply -f ./google-verifier/google-verifier.yaml
+
 docker build -t exercise-verifier ./exercise-verifier/.
 kubectl delete -f ./exercise-verifier/exercise-verifier.yaml
 kubectl apply -f ./exercise-verifier/exercise-verifier.yaml
