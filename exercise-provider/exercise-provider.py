@@ -58,6 +58,33 @@ async def root(exercise_id: Exercise_id):
 
     return jsonObject
 
+@app.post("/exercise-provider/client")
+async def root(exercise_id: Exercise_id):
+    try:
+        auth_response = requests.post("http://auth.default:3000/auth", json={"name": "tester"}) # Calling auth
+        # exercise_response = await data_base # Calling exercise database
+        if auth_response.status_code != 200:
+            raise HTTPException(
+                status_code=404,
+                detail="Auth failed"
+            )
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="Auth failed"
+        )
+
+    with open(f"exercises/{exercise_id.id}.xml", "rb") as f:
+        text = f.read()
+
+    jsonObject = {}
+
+    jsonObject.update({
+        "template" : text
+    })
+
+    return jsonObject
+
 @app.post("/exercise-provider/avalable-exercises")
 async def root():
     try:
