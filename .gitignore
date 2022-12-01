@@ -29,3 +29,5 @@ __pycache__
 /exercise-provider/exercises/*
 .DS_Store
 *.sh
+
+.idea
