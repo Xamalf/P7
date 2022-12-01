@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import subprocess
 from uuid import uuid4
 from os import remove
+import json
 
 
 app = FastAPI(root_path="/exercise-verifier")
@@ -18,7 +19,7 @@ class Xml_wrapper(BaseModel):
 async def root(xml_in_json: Xml_wrapper):
     try:
         auth_response = requests.post("http://auth.default:3000/auth", json={"name": "tester"}) # Calling auth
-        exercise_provider_response = requests.post("http://exercise-provider.default:2000/exercise-provider", 
+        exercise_provider_response = requests.post("http://exercise-provider.default:2000/exercise-provider/verify",
             json={"id":xml_in_json.id}) # Calling exercise provider
         # user_dataresponse = await data_base # Calling user database
         if auth_response.status_code != 200 or exercise_provider_response.status_code != 200:
@@ -34,12 +35,20 @@ async def root(xml_in_json: Xml_wrapper):
 
     file_name = "./exercises/" + str(uuid4()) + ".xml"
 
-    text = exercise_provider_response.content
+    template = json.loads(xml_in_json.json())
+    provided = json.loads(exercise_provider_response.content.decode('utf-8'))
+
+    print("--------------")
+    print(template)
+    print(provided["beginning"])
+    print("--------------")
+
+    text = provided["beginning"] + template["xml"] + provided["end"]
 
     print(text)
 
     with open(file_name, "wb") as f:
-        f.write(text)
+        f.write(text.encode())
 
     print("after write")
 
