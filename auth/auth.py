@@ -36,15 +36,13 @@ def root(cookie: str = Cookie(None)):
 
     email = email.content.decode('utf-8')
 
-    print("---------------> " + email)
-
     db_cursor.execute('''SELECT name, email FROM users WHERE email = %s;''', [email])
 
     result = db_cursor.fetchone()
     
     if not result:
         print("User NOT authenticated - login exited")
-        return False
+        return {"name" : "no user", "email" : "no email"}
     else:
         print("User authenticated - login exited")
         return {"name" : result[0], "email" : result[1]}
