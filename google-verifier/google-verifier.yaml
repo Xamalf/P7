@@ -21,12 +21,12 @@ spec:
         ports:
         - containerPort: 6000
         env:
-        - name: CLIENT-ID
+        - name: CLIENTID
           valueFrom: 
             secretKeyRef:
               name: googlesecret
               key: client_id
-        - name: CLIENT-SECRET
+        - name: CLIENTSECRET
           valueFrom: 
             secretKeyRef:
               name: googlesecret
