@@ -62,6 +62,7 @@ async def root(xml_in_json: Xml_wrapper):
         return {"message": f"Hello {auth_response.json()['name']} from exercise verifier! \n "
                            f"One or more queries NOT satisfied \n OUTPUT: \n {output}"}
     else:
+
         return {"message": f"Hello {auth_response.json()['name']} from exercise verifier! \n "
                            f"All queries satisfied \n OUTPUT: \n {output}"}
 
