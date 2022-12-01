@@ -38,11 +38,6 @@ async def root(xml_in_json: Xml_wrapper):
     template = json.loads(xml_in_json.json())
     provided = json.loads(exercise_provider_response.content.decode('utf-8'))
 
-    print("--------------")
-    print(template)
-    print(provided["beginning"])
-    print("--------------")
-
     text = provided["beginning"] + template["xml"] + provided["end"]
 
     print(text)
@@ -62,7 +57,8 @@ async def root(xml_in_json: Xml_wrapper):
         return {"message": f"Hello {auth_response.json()['name']} from exercise verifier! \n "
                            f"One or more queries NOT satisfied \n OUTPUT: \n {output}"}
     else:
-
+        requests.post("http://data-access.default:5000/data-access/insert-completed-exercise",
+                      json={"user_name": "Me", "exercise_name": "opg2"})
         return {"message": f"Hello {auth_response.json()['name']} from exercise verifier! \n "
                            f"All queries satisfied \n OUTPUT: \n {output}"}
 
