@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: google-verifier
+  labels:
+    app: google-verifier
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: google-verifier
+  template:
+    metadata:
+      labels:
+        app: google-verifier
+    spec:
+      containers:
+      - name: google-verifier
+        image: google-verifier
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 6000
+        env:
+        - name: CLIENTID
+          valueFrom: 
+            secretKeyRef:
+              name: googlesecret
+              key: client_id
+        - name: CLIENTSECRET
+          valueFrom: 
+            secretKeyRef:
+              name: googlesecret
+              key: client_secret
+          
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: google-verifier
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6000
+      protocol: TCP
+      targetPort: 6000
+  selector:
+    app: google-verifier
