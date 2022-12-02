@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Cookie
+from fastapi import FastAPI, Cookie, Response
 import psycopg2
 from pydantic import BaseModel
 import uvicorn
 import requests
+from uuid import uuid4
 app = FastAPI()
 
 class User_info(BaseModel):
@@ -25,27 +26,19 @@ async def root():
     return {"message": "Hello from auth!"}
 
 
-@app.get("/auth/login")
-def root(cookie: str = Cookie(None)):
-    print("login entered")
-    
-    try:
-        email = requests.post("http://google-verifier.default:6000/google-verifier/", json={"code": cookie})
-    except Exception as e:
-        print(f"{str(e)}")
-
-    email = email.content.decode('utf-8')
-
-    db_cursor.execute('''SELECT name, email FROM users WHERE email = %s;''', [email])
+@app.post("/auth/login")
+def root(username: User_info, response: Response):
+    db_cursor.execute('''SELECT name, email FROM users WHERE name = %s;''', [username.name])
 
     result = db_cursor.fetchone()
     
     if not result:
         print("User NOT authenticated - login exited")
-        return {"name" : "no user", "email" : "no email"}
+        return {"name" : "no user", }
     else:
         print("User authenticated - login exited")
-        return {"name" : result[0], "email" : result[1]}
+        response.set_cookie(key="cookie", value=result[0])
+        return { "name": result[0] }
 
 
 @app.post("/auth")
@@ -54,3 +47,15 @@ async def root(user_info: User_info):
     return user_info
 
 uvicorn.run(app, host="0.0.0.0", port=3000)
+
+
+
+
+
+
+
+
+
+
+
+

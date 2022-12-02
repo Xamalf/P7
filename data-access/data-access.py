@@ -51,7 +51,7 @@ async def root(user: User):
         db_cursor.execute('''INSERT INTO users(name, about, title, createdAt, email) VALUES (%s, %s, %s, %s, %s);''', [user.name, user.about, "Revuppaal User", dt.now().strftime('%d %B %Y'), user.email])
     except Exception as e:
         print("Creating user in users failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
 
     print("create-user exited")
     return {"message": f"{user.name} succesfully created"}
@@ -65,14 +65,14 @@ async def root(user: UserName):
         db_cursor.execute('''SELECT u.name, u.title, u.email, u.about, COUNT(ce.user_id), SUM(e.xp) FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e on ce.ex_id = e.id WHERE u.name = %s GROUP BY u.name, u.title, u.email, u.about;''', [user.name])
     except Exception as e:
         print("Getting user info from users failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
     
     try:
         user_info = db_cursor.fetchone()
         user_info_as_json = {"name": user_info[0], "title": user_info[1], "email": user_info[2], "about": user_info[3], "completed_exercises": user_info[4], "total_score": user_info[5]}
     except Exception as e:
         print("fetctone() failed")
-        return {"message": f'{str(e)}', "user_info": user_info}
+        return {"message": str(e), "user_info": user_info}
 
     print("get-user-info exited")
     return user_info_as_json
@@ -86,7 +86,7 @@ async def root(user: UserName):
         db_cursor.execute('''SELECT id FROM users WHERE name = %s''', [user.name])
     except Exception as e:
         print("Getting user from users failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
     
     user_id = db_cursor.fetchone()[0]
 
@@ -94,13 +94,13 @@ async def root(user: UserName):
         db_cursor.execute('''DELETE FROM users WHERE id = %s''', [user_id])
     except Exception as e:
         print("Deleting user from users failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
     
     try:
         db_cursor.execute('''DELETE FROM completed_exercises WHERE user_id = %s''', [user_id])
     except Exception as e:
         print("Deleting user from completed_exercises failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
 
     print("delete-user exited")
     return {"message": f"User {user.name} succesfully deleted"}
@@ -115,12 +115,12 @@ async def root(exercise: ExerciseDescription):
         db_cursor.execute('''SELECT * FROM exercises WHERE id = %s''', [exercise.ex_id])
     except Exception as e:
         print("Getting exercise description from exercises failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
 
     try:
         exercise_description = db_cursor.fetchone()
     except Exception as e:
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
 
     print("get-exercise-description exited")
     return {"description": exercise_description[3], "name": exercise_description[1]}
@@ -134,7 +134,7 @@ async def root(exerciseAndUserName: ExerciseAndUserName):
         db_cursor.execute('''SELECT id FROM users WHERE name = %s''', [exerciseAndUserName.user_name])
     except Exception as e:
         print("Getting user from users failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
     
     user_id = db_cursor.fetchone()[0]
     
@@ -142,7 +142,7 @@ async def root(exerciseAndUserName: ExerciseAndUserName):
         db_cursor.execute('''SELECT id FROM exercises WHERE name = %s''', [exerciseAndUserName.exercise_name])
     except Exception as e:
         print("Getting exercise from exercises failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
 
     ex_id = db_cursor.fetchone()[0]
 
@@ -150,7 +150,7 @@ async def root(exerciseAndUserName: ExerciseAndUserName):
         db_cursor.execute('''INSERT INTO completed_exercises(ex_id, user_id) VALUES (%s, %s);''', [ex_id, user_id])
     except Exception as e:
         print("Creating user in users failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
     
     print("insert-complete-exercise exited")
     return {"message": f"User has completed exercise"}
@@ -164,17 +164,17 @@ async def root():
         db_cursor.execute('''SELECT row_number() OVER(ORDER BY SUM(e.xp) DESC) rank, u.name, SUM(e.xp), COUNT(u.name) completed FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e ON ex_id = e.id GROUP BY u.name ORDER BY SUM DESC;''')
     except Exception as e:
         print("Query failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
     
     try:
         leaderboard_info = db_cursor.fetchall()
     except Exception as e:
         print("fetchall() failed")
-        return {"message": f'{str(e)}'}
+        return {"message": str(e)}
 
     jsonObject = {}
     for x in leaderboard_info:
-        jsonObject.update({f'{x[0]}' : [f'{x[1]}', f'{x[2]}', f'{x[3]}']})
+        jsonObject.update({x[0] : [x[1], x[2], x[3] ]})
     
     print("get-user-scores exited")
     return jsonObject
