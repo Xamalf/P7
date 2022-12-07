@@ -30,6 +30,10 @@ class ExerciseAndUserName(BaseModel):
     user_name: str
     exercise_name: str
 
+class Token(BaseModel):
+    access_token: str
+    refresh_token: str
+
 
 db_connection = psycopg2.connect(
             database="user_data_db",
@@ -58,8 +62,17 @@ async def root(user: User):
 
 
 @app.post("/data-access/get-user-info")
-async def root(user: UserName):
-    print("get-user-info entered")
+async def root(user: UserName, access_token: str = Cookie(None), refresh_token: str = Cookie(None)):
+
+    
+    try:
+        uauth = userAuth({ "access_token": access_token, "refresh_token": refresh_token })
+    except Exception as e:
+        raise HTTPException(
+            status_code=404,
+            detail="Auth failed"
+        )
+    
 
     try:
         db_cursor.execute('''SELECT u.name, u.title, u.email, u.about, COUNT(ce.user_id), SUM(e.xp) FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e on ce.ex_id = e.id WHERE u.name = %s GROUP BY u.name, u.title, u.email, u.about;''', [user.name])
@@ -75,21 +88,24 @@ async def root(user: UserName):
         return {"message": str(e), "user_info": user_info}
 
     print("get-user-info exited")
+
+    
+
+
     return user_info_as_json
 
 
 @app.post("/data-access/delete-user")
 async def root(user: UserName):
-    print("delete-user entered")
-
+     
     try:
-        db_cursor.execute('''SELECT id FROM users WHERE name = %s''', [user.name])
+        uauth = userAuth({ "access_token": access_token, "refresh_token": refresh_token })
     except Exception as e:
-        print("Getting user from users failed")
-        return {"message": str(e)}
+        raise HTTPException(
+            status_code=404,
+            detail="Auth failed"
+        )
     
-    user_id = db_cursor.fetchone()[0]
-
     try:
         db_cursor.execute('''DELETE FROM users WHERE id = %s''', [user_id])
     except Exception as e:
@@ -180,3 +196,17 @@ async def root():
     return jsonObject
 
 uvicorn.run(app, host="0.0.0.0", port=5000)
+
+
+async def userAuth(token: Token):
+
+    auth_response = requests.post("auth.default:3000/auth/username",
+    json=code)
+
+    if auth_response.status_code != 200 or exercise_provider_response.status_code != 200:
+        raise HTTPException(
+            status_code=404,
+            detail="Auth failed"
+        )
+    
+    return auth_response

@@ -18,4 +18,4 @@ COPY . .
 
 EXPOSE 6000
 
-CMD ["node", "google-verifier.js", ">", "logs"]
+CMD ["node", "google-verifier.js"] > logs

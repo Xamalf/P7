@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Cookie, Response
+from fastapi import FastAPI, Cookie, Response, HTTPException
 import psycopg2
 from pydantic import BaseModel
 import uvicorn
@@ -8,6 +8,13 @@ app = FastAPI()
 
 class User_info(BaseModel):
     name: str
+
+class Code(BaseModel):
+    code: str
+
+class Token(BaseModel):
+    access_token: str
+    refresh_token: str
 
 db_connection = psycopg2.connect(
             database="user_data_db",
@@ -19,11 +26,6 @@ db_connection = psycopg2.connect(
 
 db_cursor = db_connection.cursor()    
 db_connection.autocommit = True
-
-
-@app.get("/auth")
-async def root():
-    return {"message": "Hello from auth!"}
 
 
 @app.post("/auth/login")
@@ -42,9 +44,72 @@ def root(username: User_info, response: Response):
 
 
 @app.post("/auth")
-async def root(user_info: User_info):
-    print(user_info)
-    return user_info
+def root(code: Code, response: Response):  
+    print("User auth code entered")
+
+    try:
+        print("Try block entered")
+        auth_response = requests.post("http://google-verifier.default:6000/google-verifier",
+        json={ "code": code.code })
+
+        print("Auth response generated")
+
+        if auth_response.status_code != 200:
+            raise HTTPException(
+                status_code=404,
+                detail="Auth failed by status code != 200"
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Auth failed by raised exception + { str(e) }"
+        )
+
+    response_tokens = auth_response.json()
+    response.set_cookie(key="access_token", value=response_tokens["access_token"])
+    response.set_cookie(key="refresh_token", value=response_tokens["refresh_token"])
+
+    return { "token_cookie": "Token cookies created"}
+
+@app.post("/auth/username")
+def root(token: Token, response: Response):  
+    print("User token recieved entered")
+
+    try:
+        userinfo = requests.post("http://google-verifier.default:6000/google-verifier/token-verifier",
+        json=token)
+
+        if userinfo.status_code != 200:
+            raise HTTPException(
+                status_code=404,
+                detail="Auth failed by status code != 200"
+            )
+
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="Auth failed"
+        )
+
+    reponse_userinfo = userinfo.json()
+
+    try:
+        db_cursor.execute('''SELECT id FROM users WHERE email = %s;''', [response_userinfo.email])
+
+    except Exception as e:
+        print("Getting user info from users failed")
+        return {"message": str(e)}
+    
+    try:
+        user_info = db_cursor.fetchone()
+        user_info_as_json = {"id": user_info[0]}
+    except Exception as e:
+        print("fetctone() failed")
+        return {"message": str(e), "user_info": user_info}
+    
+    return user_info_as_json
+
+
 
 uvicorn.run(app, host="0.0.0.0", port=3000)
 
