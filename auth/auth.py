@@ -72,24 +72,29 @@ def root(code: Code, response: Response):
     return { "token_cookie": "Token cookies created"}
 
 @app.post("/auth/username")
-def root(token: Token, response: Response):  
+def root(token: Token):  
     print("User token recieved entered")
 
     try:
         userinfo = requests.post("http://google-verifier.default:6000/google-verifier/token-verifier",
         json=token)
-
+        print("Outside if")
         if userinfo.status_code != 200:
+            print("Entered if!")
             raise HTTPException(
                 status_code=404,
                 detail="Auth failed by status code != 200"
             )
 
+
     except Exception:
+        print("Entered exception")
         raise HTTPException(
             status_code=404,
             detail="Auth failed"
         )
+
+        # Print exception
 
     reponse_userinfo = userinfo.json()
 

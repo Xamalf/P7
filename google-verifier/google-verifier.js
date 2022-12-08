@@ -20,9 +20,7 @@ app.post('/google-verifier', (req, res) => {
   })  
 })
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+
 
 app.post('/google-verifier/token-verifier', (req, res) => {
   
@@ -31,6 +29,10 @@ app.post('/google-verifier/token-verifier', (req, res) => {
   }).catch((error) => {
     console.log(error)
   })  
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
 })
 
 

@@ -3,6 +3,7 @@ import uvicorn
 import psycopg2
 from pydantic import BaseModel
 from datetime import datetime as dt
+import requests
 
 app = FastAPI()
 
@@ -18,17 +19,12 @@ class Exercise(BaseModel):
 
 class CompletedExercise(BaseModel):
     ex_id: str
-    user_id: str
 
 class UserName(BaseModel):
     name: str
 
 class ExerciseDescription(BaseModel):
     ex_id: int
-
-class ExerciseAndUserName(BaseModel):
-    user_name: str
-    exercise_name: str
 
 class Token(BaseModel):
     access_token: str
@@ -46,6 +42,18 @@ db_connection = psycopg2.connect(
 db_connection.autocommit = True
 db_cursor = db_connection.cursor()
 
+async def userAuth(token: Token):
+
+    auth_response = requests.post("http://auth.default:3000/auth/username",
+    json=token)
+
+    if auth_response.status_code != 200:
+        raise HTTPException(
+            status_code=404,
+            detail="Auth failed"
+        )
+    
+    return auth_response
  
 @app.post("/data-access/create-user")
 async def root(user: User):
@@ -66,12 +74,13 @@ async def root(user: UserName, access_token: str = Cookie(None), refresh_token: 
 
     
     try:
-        uauth = userAuth({ "access_token": access_token, "refresh_token": refresh_token })
+        uauth = await userAuth({ "access_token": access_token, "refresh_token": refresh_token })
     except Exception as e:
         raise HTTPException(
             status_code=404,
-            detail="Auth failed"
+            detail=f"Auth failed + {str(e)}"
         )
+
     
 
     try:
@@ -94,32 +103,66 @@ async def root(user: UserName, access_token: str = Cookie(None), refresh_token: 
 
     return user_info_as_json
 
+@app.get("/data-access/user-profile-info")
+async def root(access_token: str = Cookie(None), refresh_token: str = Cookie(None)):
+
+    
+    try:
+        uauth = await userAuth({ "access_token": access_token, "refresh_token": refresh_token })
+    except Exception as e:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Auth failed + {str(e)}"
+        )
+    
+
+    try:
+        db_cursor.execute('''SELECT u.name, u.title, u.email, u.about, COUNT(ce.user_id), SUM(e.xp) FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e on ce.ex_id = e.id WHERE u.id = %s GROUP BY u.name, u.title, u.email, u.about;''', [uauth.id])
+    except Exception as e:
+        print("Getting user info from users failed")
+        return {"message": str(e)}
+    
+    try:
+        user_info = db_cursor.fetchone()
+        user_info_as_json = {"name": user_info[0], "title": user_info[1], "email": user_info[2], "about": user_info[3], "completed_exercises": user_info[4], "total_score": user_info[5]}
+    except Exception as e:
+        print("fetctone() failed")
+        return {"message": str(e), "user_info": user_info}
+
+    print("get-user-info exited")
+
+    
+
+
+    return user_info_as_json
+
+
 
 @app.post("/data-access/delete-user")
 async def root(user: UserName):
      
     try:
-        uauth = userAuth({ "access_token": access_token, "refresh_token": refresh_token })
+        uauth = await userAuth({ "access_token": access_token, "refresh_token": refresh_token })
     except Exception as e:
         raise HTTPException(
             status_code=404,
-            detail="Auth failed"
+            detail=f"Auth failed + {str(e)}"
         )
     
     try:
-        db_cursor.execute('''DELETE FROM users WHERE id = %s''', [user_id])
+        db_cursor.execute('''DELETE FROM users WHERE id = %s''', [uauth.id])
     except Exception as e:
         print("Deleting user from users failed")
         return {"message": str(e)}
     
     try:
-        db_cursor.execute('''DELETE FROM completed_exercises WHERE user_id = %s''', [user_id])
+        db_cursor.execute('''DELETE FROM completed_exercises WHERE user_id = %s''', [uauth.id])
     except Exception as e:
         print("Deleting user from completed_exercises failed")
         return {"message": str(e)}
 
     print("delete-user exited")
-    return {"message": f"User {user.name} succesfully deleted"}
+    return {"message": f"User succesfully deleted"}
     
 # -- #
 
@@ -143,27 +186,19 @@ async def root(exercise: ExerciseDescription):
 
 
 @app.post("/data-access/insert-completed-exercise")
-async def root(exerciseAndUserName: ExerciseAndUserName):
+async def root(completedExercise: CompletedExercise, access_token: str = Cookie(None), refresh_token: str = Cookie(None)):
     print("insert-complete-exercise entered")
 
     try:
-        db_cursor.execute('''SELECT id FROM users WHERE name = %s''', [exerciseAndUserName.user_name])
+        uauth = await userAuth({ "access_token": access_token, "refresh_token": refresh_token })
     except Exception as e:
-        print("Getting user from users failed")
-        return {"message": str(e)}
-    
-    user_id = db_cursor.fetchone()[0]
-    
-    try:
-        db_cursor.execute('''SELECT id FROM exercises WHERE name = %s''', [exerciseAndUserName.exercise_name])
-    except Exception as e:
-        print("Getting exercise from exercises failed")
-        return {"message": str(e)}
-
-    ex_id = db_cursor.fetchone()[0]
+        raise HTTPException(
+            status_code=404,
+            detail=f"Auth failed + {str(e)}"
+        )
 
     try:
-        db_cursor.execute('''INSERT INTO completed_exercises(ex_id, user_id) VALUES (%s, %s);''', [ex_id, user_id])
+        db_cursor.execute('''INSERT INTO completed_exercises(ex_id, user_id) VALUES (%s, %s);''', [completedExercise.ex_id, uauth.id ])
     except Exception as e:
         print("Creating user in users failed")
         return {"message": str(e)}
@@ -198,15 +233,3 @@ async def root():
 uvicorn.run(app, host="0.0.0.0", port=5000)
 
 
-async def userAuth(token: Token):
-
-    auth_response = requests.post("auth.default:3000/auth/username",
-    json=code)
-
-    if auth_response.status_code != 200 or exercise_provider_response.status_code != 200:
-        raise HTTPException(
-            status_code=404,
-            detail="Auth failed"
-        )
-    
-    return auth_response
