@@ -77,7 +77,7 @@ def root(token: Token):
 
     try:
         userinfo = requests.post("http://google-verifier.default:6000/google-verifier/token-verifier",
-        json=token)
+        json={ "access_token": token.access_token, "refresh_token": token.refresh_token})
         print("Outside if")
         if userinfo.status_code != 200:
             print("Entered if!")
@@ -87,25 +87,27 @@ def root(token: Token):
             )
 
 
-    except Exception:
-        print("Entered exception")
+    except Exception as e:
+        print(f"Entered exception {e}")
         raise HTTPException(
             status_code=404,
             detail="Auth failed"
         )
 
-        # Print exception
-
+    print("I got to before response")
     reponse_userinfo = userinfo.json()
+    print("before try")
 
     try:
         db_cursor.execute('''SELECT id FROM users WHERE email = %s;''', [response_userinfo.email])
-
+        print("after try")
     except Exception as e:
         print("Getting user info from users failed")
         return {"message": str(e)}
-    
+        
+    print("Before try 2")    
     try:
+        print("Inside try")
         user_info = db_cursor.fetchone()
         user_info_as_json = {"id": user_info[0]}
     except Exception as e:

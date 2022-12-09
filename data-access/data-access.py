@@ -42,10 +42,10 @@ db_connection = psycopg2.connect(
 db_connection.autocommit = True
 db_cursor = db_connection.cursor()
 
-async def userAuth(token: Token):
+def userAuth(token: Token):
 
     auth_response = requests.post("http://auth.default:3000/auth/username",
-    json=token)
+    json= { "access_token": token["access_token"], "refresh_token": token["refresh_token"] } )
 
     if auth_response.status_code != 200:
         raise HTTPException(
@@ -71,25 +71,30 @@ async def root(user: User):
 
 @app.post("/data-access/get-user-info")
 async def root(user: UserName, access_token: str = Cookie(None), refresh_token: str = Cookie(None)):
-
+    print("Get-user-info entered")
     
     try:
-        uauth = await userAuth({ "access_token": access_token, "refresh_token": refresh_token })
+        print("I is in try, yes!")
+        uauth = userAuth({ "access_token": access_token, "refresh_token": refresh_token })
     except Exception as e:
+        print("Le exception :(")
         raise HTTPException(
             status_code=404,
-            detail=f"Auth failed + {str(e)}"
+            detail=f"Auth failed {str(e)}"
         )
 
     
-
+    print("B4 second try")
     try:
+        print("Inside 2nd try")
         db_cursor.execute('''SELECT u.name, u.title, u.email, u.about, COUNT(ce.user_id), SUM(e.xp) FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e on ce.ex_id = e.id WHERE u.name = %s GROUP BY u.name, u.title, u.email, u.about;''', [user.name])
     except Exception as e:
         print("Getting user info from users failed")
         return {"message": str(e)}
     
+    print("B4 3rd try")
     try:
+        print("Inside 3rd try")
         user_info = db_cursor.fetchone()
         user_info_as_json = {"name": user_info[0], "title": user_info[1], "email": user_info[2], "about": user_info[3], "completed_exercises": user_info[4], "total_score": user_info[5]}
     except Exception as e:
@@ -108,7 +113,7 @@ async def root(access_token: str = Cookie(None), refresh_token: str = Cookie(Non
 
     
     try:
-        uauth = await userAuth({ "access_token": access_token, "refresh_token": refresh_token })
+        uauth = userAuth({ "access_token": access_token, "refresh_token": refresh_token })
     except Exception as e:
         raise HTTPException(
             status_code=404,
@@ -142,7 +147,7 @@ async def root(access_token: str = Cookie(None), refresh_token: str = Cookie(Non
 async def root(user: UserName):
      
     try:
-        uauth = await userAuth({ "access_token": access_token, "refresh_token": refresh_token })
+        uauth = userAuth({ "access_token": access_token, "refresh_token": refresh_token })
     except Exception as e:
         raise HTTPException(
             status_code=404,
@@ -190,7 +195,7 @@ async def root(completedExercise: CompletedExercise, access_token: str = Cookie(
     print("insert-complete-exercise entered")
 
     try:
-        uauth = await userAuth({ "access_token": access_token, "refresh_token": refresh_token })
+        uauth = userAuth({ "access_token": access_token, "refresh_token": refresh_token })
     except Exception as e:
         raise HTTPException(
             status_code=404,
