@@ -1,9 +1,8 @@
-from fastapi import FastAPI, Cookie, Response, HTTPException
+from fastapi import FastAPI, Response, HTTPException
 import psycopg2
 from pydantic import BaseModel
 import uvicorn
 import requests
-from uuid import uuid4
 app = FastAPI()
 
 class User_info(BaseModel):
@@ -44,13 +43,13 @@ def root(username: User_info, response: Response):
 
 
 @app.post("/auth")
-def root(code: Code, response: Response):  
+async def root(code: Code, response: Response):
     print("User auth code entered")
 
     try:
         print("Try block entered")
         auth_response = requests.post("http://google-verifier.default:6000/google-verifier",
-        json={ "code": code.code })
+        json={"code": code.code})
 
         print("Auth response generated")
 
@@ -72,12 +71,13 @@ def root(code: Code, response: Response):
     return { "token_cookie": "Token cookies created"}
 
 @app.post("/auth/username")
-def root(token: Token):  
+async def root(token: Token):
     print("User token recieved entered")
+    print(f"TOKEN: \n acc: {token.access_token} \n ref: {token.refresh_token}")
 
     try:
         userinfo = requests.post("http://google-verifier.default:6000/google-verifier/token-verifier",
-        json={ "access_token": token.access_token, "refresh_token": token.refresh_token})
+        json={"token": {"access_token": token.access_token, "refresh_token": token.refresh_token}})
         print("Outside if")
         if userinfo.status_code != 200:
             print("Entered if!")
@@ -95,17 +95,18 @@ def root(token: Token):
         )
 
     print("I got to before response")
-    reponse_userinfo = userinfo.json()
+    response_userinfo = userinfo.json()
     print("before try")
 
     try:
-        db_cursor.execute('''SELECT id FROM users WHERE email = %s;''', [response_userinfo.email])
+        db_cursor.execute('''SELECT id FROM users WHERE email = %s;''', [response_userinfo["email"]])
         print("after try")
     except Exception as e:
         print("Getting user info from users failed")
         return {"message": str(e)}
         
-    print("Before try 2")    
+    print("Before try 2")
+    user_info = ""
     try:
         print("Inside try")
         user_info = db_cursor.fetchone()

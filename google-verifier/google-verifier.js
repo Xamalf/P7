@@ -17,6 +17,7 @@ app.post('/google-verifier', (req, res) => {
     res.send(tokens)
   }).catch((error) => {
     console.log(error)
+    res.send("something went wrong")
   })  
 })
 
@@ -28,6 +29,7 @@ app.post('/google-verifier/token-verifier', (req, res) => {
     res.send(userInfo)
   }).catch((error) => {
     console.log(error)
+    res.send("something went wrong")
   })  
 })
 
