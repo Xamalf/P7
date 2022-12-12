@@ -129,14 +129,20 @@ async def root(access_token: str = Cookie(None), refresh_token: str = Cookie(Non
         db_cursor.execute('''SELECT u.name, u.title, u.email, u.about, COUNT(ce.user_id), SUM(e.xp) FROM users u JOIN completed_exercises ce ON u.id = ce.user_id JOIN exercises e on ce.ex_id = e.id WHERE u.id = %s GROUP BY u.name, u.title, u.email, u.about;''', [uauth["id"]])
     except Exception as e:
         print("Getting user info from users failed")
-        return {"message": str(e)}
+        raise HTTPException(
+            status_code=404,
+            detail=f"Auth failed + {str(e)}"
+        )
     
     try:
         user_info = db_cursor.fetchone()
         user_info_as_json = {"name": user_info[0], "title": user_info[1], "email": user_info[2], "about": user_info[3], "completed_exercises": user_info[4], "total_score": user_info[5]}
     except Exception as e:
         print("fetctone() failed")
-        return {"message": str(e), "user_info": user_info}
+        raise HTTPException(
+            status_code=404,
+            detail=f"Auth failed + {str(e)}"
+        )
 
     print("get-user-info exited")
 
