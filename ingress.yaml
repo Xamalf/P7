@@ -3,6 +3,10 @@ kind: Ingress
 metadata:
   name: my-ingress
 spec:
+  tls:
+    - hosts:
+        - revuppaal.dk
+      secretName: ssl
   rules:
   - host: revuppaal.dk
     http:
