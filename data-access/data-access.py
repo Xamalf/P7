@@ -4,6 +4,7 @@ import psycopg2
 from pydantic import BaseModel
 from datetime import datetime as dt
 import requests
+from fastapi.responses import RedirectResponse
 
 app = FastAPI()
 
@@ -57,7 +58,7 @@ def userAuth(token: Token):
     
     return auth_response.json()
  
-@app.post("/data-access/create-user")
+@app.get("/data-access/create-user")
 async def root(username: str = None, email: str = None, about: str = ""):
     print("create-user entered")
     if(username and email):
@@ -68,7 +69,7 @@ async def root(username: str = None, email: str = None, about: str = ""):
             return {"message": str(e)}
 
         print("create-user exited")
-        return {"message": f"{username} succesfully created"}
+        return RedirectResponse('/')
 
     else:
         raise HTTPException(
