@@ -33,6 +33,7 @@ kubectl apply -f ./auth/auth.yaml
 
 kubectl apply -f ./secrets/db_secret.yaml
 kubectl apply -f ./secrets/google_secret.yaml
+kubectl apply -f ./secrets/tls_secret.yaml
 
 kubectl delete -f ./ingress.yaml
 kubectl apply -f ./ingress.yaml

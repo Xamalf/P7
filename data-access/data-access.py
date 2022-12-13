@@ -58,17 +58,23 @@ def userAuth(token: Token):
     return auth_response.json()
  
 @app.post("/data-access/create-user")
-async def root(user: User):
+async def root(username: str = None, email: str = None, about: str = ""):
     print("create-user entered")
+    if(username and email):
+        try:
+            db_cursor.execute('''INSERT INTO users(name, about, title, createdAt, email) VALUES (%s, %s, %s, %s, %s);''', [username, about, "Revuppaal User", dt.now().strftime('%d %B %Y'), email])
+        except Exception as e:
+            print("Creating user in users failed")
+            return {"message": str(e)}
 
-    try:
-        db_cursor.execute('''INSERT INTO users(name, about, title, createdAt, email) VALUES (%s, %s, %s, %s, %s);''', [user.name, user.about, "Revuppaal User", dt.now().strftime('%d %B %Y'), user.email])
-    except Exception as e:
-        print("Creating user in users failed")
-        return {"message": str(e)}
+        print("create-user exited")
+        return {"message": f"{username} succesfully created"}
 
-    print("create-user exited")
-    return {"message": f"{user.name} succesfully created"}
+    else:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Please fill in the required values"
+        )
 
 
 @app.post("/data-access/get-user-info")
