@@ -69,12 +69,12 @@ async def root(xml_in_json: Xml_wrapper, access_token: str = Cookie(None), refre
     remove(file_name)
 
     if b'Formula is NOT satisfied' in output:
-        return {"message": f"Hello {auth_response['id']} from exercise verifier! \n "
+        return {"status": "failed", "message": f"Hello {auth_response['id']} from exercise verifier! \n "
                            f"One or more queries NOT satisfied \n OUTPUT: \n {output}"}
     else:
         requests.post("http://data-access.default:5000/data-access/insert-completed-exercise",
                       json={"ex_id": str(xml_in_json.id), "access_token": access_token, "refresh_token": refresh_token })
-        return {"message": f"Hello {auth_response['id']} from exercise verifier! \n "
+        return {"status": "success", "message": f"Hello {auth_response['id']} from exercise verifier! \n "
                            f"All queries satisfied \n OUTPUT: \n {output}"}
 
 
